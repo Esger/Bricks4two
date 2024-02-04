@@ -1,3 +1,10 @@
+import $ from 'jquery';
+
 export class App {
-  message = 'Hello World!';
+    attached() {
+        // $('body').on('mousemove', event => {
+        //     document.body.style.setProperty('--ballX', event.clientX + 'px');
+        //     document.body.style.setProperty('--ballY', event.clientY + 'px');
+        // });
+    }
 }
