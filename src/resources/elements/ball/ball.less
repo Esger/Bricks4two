@@ -1,5 +1,6 @@
 ball {
     --transitionTime          : .3s;
+    --ballSize                : 3vmin;
     position                  : absolute;
     left                      : 0;
     top                       : 0;
@@ -8,7 +9,8 @@ ball {
     transition-timing-function: linear;
     transition-duration       : var(--transitionTime);
     display                   : block;
-    width                     : 3vmin;
+    width                     : var(--ballSize);
+    margin                    : calc(var(--ballSize) / -2);
     aspect-ratio              : 1;
     border-radius             : 50%;
     background-color          : black;

@@ -1,10 +1,15 @@
 import $ from 'jquery';
 
 export class App {
+    constructor() {
+        this.walls = [];
+    }
     attached() {
-        // $('body').on('mousemove', event => {
-        //     document.body.style.setProperty('--ballX', event.clientX + 'px');
-        //     document.body.style.setProperty('--ballY', event.clientY + 'px');
-        // });
+        this.walls.push(
+            { x: window.innerWidth },
+            { y: window.innerHeight },
+            { x: 0 },
+            { y: 0 },
+        );
     }
 }
