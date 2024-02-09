@@ -21,20 +21,19 @@ export class Ball {
         // x = (y - b) / a
         const a = Math.tan(this.angle);
         const b = this.currentPosition.y - a * this.currentPosition.x;
-        // todo guard for a == 0
-        return (y - b) / a;
+        // guard for a == 0 
+        // todo + or - Number.EPSILON
+        return (y - b) / (a || Number.EPSILON);
     }
 
     attached() {
         console.clear();
-        console.table(this.walls);
         this.currentPosition = this._getCurrentPosition();
         $('body').on('click', event => {
             const point = { x: event.clientX, y: event.clientY };
             this._setAngle(point);
             const target = this._calculateClosestWallIntersectionAhead();
             this.moveTo(target);
-            console.log(target);
         });
         // $(this._element).one('transitionend', _ => {
         //     this._setNewAngle();
@@ -98,35 +97,8 @@ export class Ball {
         // get the closest intersection(s) first   
         intersectionsAhead.sort((a, b) => a.distance - b.distance);
 
-        console.log('intersections:', intersectionsAhead);
+        console.table('intersections:', intersectionsAhead);
         return intersectionsAhead[0];
-    }
-
-    _getQuadrant(angle) {
-        // quadrants 0, 1, 2, 3 (right, down, left, up)
-        // 0.25 pi - 0.75 pi -> quadrant 1
-        // 0.75 pi - 1.25 pi -> quadrant 2
-        // 1.25 pi - 1.75 pi -> quadrant 3
-        // 1.75 pi - 2.25 pi -> quadrant 0
-        let quadrant;
-        switch (true) {
-            case angle >= 0 && angle < 0.25 * Math.PI:
-                quadrant = 0;
-                break;
-            case angle >= 0.25 * Math.PI && angle < 0.75 * Math.PI:
-                quadrant = 1;
-                break;
-            case angle >= 0.75 * Math.PI && angle < 1.25 * Math.PI:
-                quadrant = 2;
-                break;
-            case angle >= 1.25 * Math.PI && angle < 1.75 * Math.PI:
-                quadrant = 3;
-                break;
-            case angle >= 1.75 * Math.PI && angle < 2 * Math.PI:
-                quadrant = 0;
-                break;
-        }
-        return quadrant;
     }
 
     _normalizeAngle(angle) {
@@ -145,8 +117,6 @@ export class Ball {
         const dy = point.y - this.currentPosition.y;
         const angle = Math.atan2(dy, dx);
         this.angle = this._normalizeAngle(angle);
-        this._quadrant = this._getQuadrant(this.angle);
-        console.log('angle:', this._rad2deg(this.angle));
     }
 
     moveTo(point) {
