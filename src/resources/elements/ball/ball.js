@@ -9,26 +9,38 @@ export class Ball {
         this._element = element;
     }
 
-    // y - y1 = sin(θ) * (x - x1)
     _y = x => {
-        const left = this._quadrant == 2 ? -1 : 1;
-        return left * (x - this.currentPosition.x) * Math.sin(this.angle) + this.currentPosition.y;
+        // y = a * x + b
+        // b = startPoint_Y - (tan(angle) * startPoint_X)
+        const a = Math.tan(this.angle);
+        const b = this.currentPosition.y - a * this.currentPosition.x;
+        return a * x + b;
     }
     _x = y => {
-        const up = this._quadrant == 3 ? -1 : 1;
-        return up * (y - this.currentPosition.y) * Math.cos(this.angle) + this.currentPosition.x;
+        // y - b = a * x
+        // x = (y - b) / a
+        const a = Math.tan(this.angle);
+        const b = this.currentPosition.y - a * this.currentPosition.x;
+        // todo guard for a == 0
+        return (y - b) / a;
     }
 
     attached() {
-        this._setCurrentPosition();
+        console.clear();
+        console.table(this.walls);
+        this.currentPosition = this._getCurrentPosition();
         $('body').on('click', event => {
-            this._setAngle(event.clientX, event.clientY);
-            const intersections = this._calculateWallIntersection();
-            this.moveTo(...intersections[this._quadrant]);
+            const point = { x: event.clientX, y: event.clientY };
+            this._setAngle(point);
+            const target = this._calculateClosestWallIntersectionAhead();
+            this.moveTo(target);
+            console.log(target);
         });
-        $(this._element).on('transitionend', _ => {
-            // this._anticipateNextMove();
-        });
+        // $(this._element).one('transitionend', _ => {
+        //     this._setNewAngle();
+        //     const target = this._calculateClosestWallIntersectionAhead();
+        //     this.moveTo(...target);
+        // });
     }
 
     _anticipateNextMove() {
@@ -36,37 +48,58 @@ export class Ball {
         this.moveToNextPosition();
     }
 
-    _setCurrentPosition() {
-        this.currentPosition = {
-            x: this._element.getBoundingClientRect().x,
-            y: this._element.getBoundingClientRect().y,
+    _getCurrentPosition() {
+        const rect = this._element.getBoundingClientRect();
+        const currentPosition = {
+            x: rect.x,
+            y: rect.y
         }
-        console.log('currentPos:', this.currentPosition);
+        return currentPosition;
     }
 
-    _setTransitionTime(x, y) {
-        const dx = x - this.currentPosition.x;
-        const dy = y - this.currentPosition.y;
+    _setTransitionTime(point) {
+        const dx = point.x - this.currentPosition.x;
+        const dy = point.y - this.currentPosition.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         const transitionTime = distance / this.speed;
         this._element.style.setProperty('--transitionTime', transitionTime + 's');
     }
 
-    _setNewPosition(x, y) {
-        this._element.style.setProperty('--ballX', x + 'px');
-        this._element.style.setProperty('--ballY', y + 'px');
+    _setNewPosition(point) {
+        this._element.style.setProperty('--ballX', point.x + 'px');
+        this._element.style.setProperty('--ballY', point.y + 'px');
     }
 
-    _calculateWallIntersection() {
+    _calculateClosestWallIntersectionAhead() {
+        // return an array [x, y] for each wall that intersects with the ball's path
+        // should only return the intersection for the closest wall ahead of the ball
+        const distance = (a, b) => Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
         const intersections = this.walls.map(wall => {
+            // a wall is either an x coordinate or a y coordinate
+            const intersection = {};
             if (wall.x !== undefined) {
-                return [wall.x, this._y(wall.x)]
+                intersection.x = wall.x;
+                intersection.y = this._y(wall.x);
             } else {
-                return [this._x(wall.y), wall.y]
+                intersection.x = this._x(wall.y);
+                intersection.y = wall.y;
             }
+            const dx = intersection.x - this.currentPosition.x;
+            const dy = intersection.y - this.currentPosition.y;
+            const angle = Math.atan2(dy, dx);
+            intersection.angle = this._normalizeAngle(angle);
+            intersection.distance = distance(this.currentPosition, intersection);
+            return intersection;
         });
-        console.log('intersections:', intersections);
-        return intersections;
+        // get the one(s) ahead of the ball
+        const isOnPath = intersection => Math.abs(intersection.angle - this.angle) < 0.01;
+        const intersectionsAhead = intersections.filter(intersection => isOnPath(intersection));
+
+        // get the closest intersection(s) first   
+        intersectionsAhead.sort((a, b) => a.distance - b.distance);
+
+        console.log('intersections:', intersectionsAhead);
+        return intersectionsAhead[0];
     }
 
     _getQuadrant(angle) {
@@ -77,45 +110,48 @@ export class Ball {
         // 1.75 pi - 2.25 pi -> quadrant 0
         let quadrant;
         switch (true) {
-            case angle > 0 && angle < 0.25 * Math.PI:
+            case angle >= 0 && angle < 0.25 * Math.PI:
                 quadrant = 0;
                 break;
-            case angle > 0.25 * Math.PI && angle < 0.75 * Math.PI:
+            case angle >= 0.25 * Math.PI && angle < 0.75 * Math.PI:
                 quadrant = 1;
                 break;
-            case angle > 0.75 * Math.PI && angle < 1.25 * Math.PI:
+            case angle >= 0.75 * Math.PI && angle < 1.25 * Math.PI:
                 quadrant = 2;
                 break;
-            case angle > 1.25 * Math.PI && angle < 1.75 * Math.PI:
+            case angle >= 1.25 * Math.PI && angle < 1.75 * Math.PI:
                 quadrant = 3;
                 break;
-            case angle > 1.75 * Math.PI && angle < 2 * Math.PI:
+            case angle >= 1.75 * Math.PI && angle < 2 * Math.PI:
                 quadrant = 0;
                 break;
         }
-        console.log('quadrant:', quadrant);
         return quadrant;
     }
 
     _normalizeAngle(angle) {
         // return positive equivalent of angle
         const normalizedAngle = (angle + 2 * Math.PI) % (2 * Math.PI);
-        console.log(angle, 'normalizedAngle:', normalizedAngle);
+        console.log(this._rad2deg(angle), 'normalizedAngle:', this._rad2deg(normalizedAngle));
         return normalizedAngle;
     }
 
-    _setAngle(x, y) {
-        const dx = x - this.currentPosition.x;
-        const dy = y - this.currentPosition.y;
+    _rad2deg(angle) {
+        return angle * (180 / Math.PI);
+    }
+
+    _setAngle(point) {
+        const dx = point.x - this.currentPosition.x;
+        const dy = point.y - this.currentPosition.y;
         const angle = Math.atan2(dy, dx);
         this.angle = this._normalizeAngle(angle);
         this._quadrant = this._getQuadrant(this.angle);
-        console.log('angle:', this.angle);
+        console.log('angle:', this._rad2deg(this.angle));
     }
 
-    moveTo(x, y) {
-        this._setCurrentPosition(x, y);
-        this._setTransitionTime(x, y);
-        this._setNewPosition(x, y);
+    moveTo(point) {
+        this.currentPosition = this._getCurrentPosition();
+        this._setTransitionTime(point);
+        this._setNewPosition(point);
     }
 }

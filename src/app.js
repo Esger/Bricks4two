@@ -6,8 +6,8 @@ export class App {
     }
     attached() {
         this.walls.push(
-            { x: window.innerWidth },
-            { y: window.innerHeight },
+            { x: document.body.clientWidth },
+            { y: document.body.clientHeight },
             { x: 0 },
             { y: 0 },
         );
