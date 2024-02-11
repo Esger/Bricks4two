@@ -12,7 +12,7 @@ export class Ball {
     attached() {
         console.clear();
         this._position = this._getCurrentPosition();
-        $('body').on('click', event => {
+        $('body').one('click', event => {
             const point = { x: event.clientX, y: event.clientY };
             this._setAngle(point);
             const target = this._findClosestWallIntersectionAhead();
@@ -20,12 +20,17 @@ export class Ball {
             this.moveTo(target);
         });
         $(this._element).on('transitionend', _ => {
+            // this._speed += 50;
             this._position = this._getCurrentPosition();
             this._setReflectedAngle();
             const target = this._findClosestWallIntersectionAhead();
             this._wall = this.walls[target.wallIndex];
             this.moveTo(target);
         });
+    }
+
+    detached() {
+        $(this._element).off('transitionend');
     }
 
     _anticipateNextMove() {
@@ -36,8 +41,8 @@ export class Ball {
     _getCurrentPosition() {
         const rect = this._element.getBoundingClientRect();
         const _currentPosition = {
-            x: rect.x,
-            y: rect.y
+            x: rect.x + rect.width / 2,
+            y: rect.y + rect.height / 2
         }
         return _currentPosition;
     }
@@ -115,7 +120,6 @@ export class Ball {
         // get the closest intersection(s) first 
         intersectionsAhead.sort((a, b) => a.distance - b.distance);
 
-        console.table('intersections:', intersectionsAhead);
         return intersectionsAhead[0];
     }
 
@@ -126,7 +130,6 @@ export class Ball {
             normalizedAngle += (2 * Math.PI);
         }
         normalizedAngle = normalizedAngle % (2 * Math.PI);
-        console.log(this._rad2deg(angle), 'normalizedAngle:', this._rad2deg(normalizedAngle));
         return normalizedAngle;
     }
 
