@@ -1,0 +1,37 @@
+ball {
+    --transitionTime          : .3s;
+    --ballSize                : 3vmin;
+    position                  : absolute;
+    left                      : 0;
+    top                       : 0;
+    transform                 : translate3d(var(--ballX), var(--ballY), 0);
+    transition                : transform;
+    transition-timing-function: linear;
+    transition-duration       : var(--transitionTime);
+    display                   : block;
+    width                     : var(--ballSize);
+    margin                    : calc(var(--ballSize) / -2);
+    aspect-ratio              : 1;
+    border-radius             : 50%;
+    background-color          : black;
+    clip-path                 : circle();
+
+    &::before {
+        content       : '';
+        position      : absolute;
+        inset         : 3% 12% 50% 12%;
+        border-radius : ~'50% / 59% 59% 41% 41%';
+        background    : linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.1));
+        pointer-events: none;
+    }
+
+    &::after {
+        content       : '';
+        position      : absolute;
+        inset         : 50% 5% 0% 5%;
+        border-radius : ~'50% / 41% 41% 59% 59%';
+        background    : linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.5));
+        filter        : blur(5px);
+        pointer-events: none;
+    }
+}
