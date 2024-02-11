@@ -2,6 +2,11 @@
     <require from="./reset.css"></require>
     <require from="./app.css"></require>
     <require from="elements/ball/ball"></require>
+    <require from="elements/wall/wall"></require>
 
-    <ball walls.bind="walls"></ball>
+    <wall repeat.for="wall of walls"
+          wall.bind="wall"></wall>
+
+    <ball repeat.for="ball of balls"
+          walls.bind="walls"></ball>
 </template>

@@ -1,0 +1,17 @@
+wall {
+    display : block;
+    position: absolute;
+    left    : var(--wallX);
+    top     : var(--wallY);
+    outline : 1px solid gray;
+
+    &.vertical {
+        height: 100dvh;
+        width : 0;
+    }
+
+    &.horizontal {
+        width : 100dvw;
+        height: 0;
+    }
+}
