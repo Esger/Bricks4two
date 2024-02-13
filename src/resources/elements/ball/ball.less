@@ -1,6 +1,7 @@
 ball {
     --transitionTime          : .3s;
     --ballSize                : 3vmin;
+    background-color          : var(--color);
     position                  : absolute;
     left                      : 0;
     top                       : 0;
@@ -13,8 +14,15 @@ ball {
     margin                    : calc(var(--ballSize) / -2);
     aspect-ratio              : 1;
     border-radius             : 50%;
-    background-color          : black;
     clip-path                 : circle();
+
+    &.computer {
+        --color: black;
+    }
+
+    &.player {
+        --color: crimson;
+    }
 
     &::before {
         content       : '';

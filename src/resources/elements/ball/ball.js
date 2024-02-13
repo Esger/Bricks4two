@@ -2,6 +2,7 @@ import { inject, bindable } from 'aurelia-framework';
 
 @inject(Element)
 export class Ball {
+    @bindable ball;
     @bindable walls;
     _speed = 500; // px/s
     _angle = 0; // radians
@@ -82,25 +83,33 @@ export class Ball {
         const intersections = this.walls.map((wall, index) => {
             // a wall is either an x coordinate or a y coordinate
             const intersection = {};
-            if (wall.x !== undefined) {
+            if (wall.type == 'vertical') {
                 intersection.x = wall.x;
                 intersection.y = this._y(wall.x);
+                const intersectionIsOutsideBorder = wall.type.includes('border') &&
+                    (intersection.y < wall.y || intersection.y > wall.y + wall.length);
+                if (intersectionIsOutsideBorder) return intersection;
+
                 intersection.dx = intersection.x - this._position.x;
                 intersection.dy = intersection.y - this._position.y;
                 intersection.directionToBall = intersection.dx > 0 ? 'right' : 'left';
             } else {
                 intersection.x = this._x(wall.y);
                 intersection.y = wall.y;
+                const intersectionIsOutsideBorder = wall.type.includes('border') &&
+                    (intersection.x < wall.x || intersection.x > wall.x + wall.length);
+                if (intersectionIsOutsideBorder) return intersection;
+
                 intersection.dx = intersection.x - this._position.x;
                 intersection.dy = intersection.y - this._position.y;
                 intersection.directionToBall = intersection.dy > 0 ? 'down' : 'up';
             }
             intersection.isAhead = this._direction.includes(intersection.directionToBall);
-            if (intersection.isAhead) {
-                const angle = Math.atan2(intersection.dy, intersection.dx);
-                intersection.angle = this._normalizeAngle(angle);
-                intersection.distance = distance(this._position, intersection);
-            }
+            if (!intersection.isAhead) return intersection;
+
+            const angle = Math.atan2(intersection.dy, intersection.dx);
+            intersection.angle = this._normalizeAngle(angle);
+            intersection.distance = distance(this._position, intersection);
             intersection.wallIndex = index;
             return intersection;
         });
@@ -166,7 +175,7 @@ export class Ball {
 
     _setReflectedAngle() {
         let newAngle;
-        if (this._wall.x !== undefined) {
+        if (this._wall.type == 'vertical') {
             newAngle = Math.PI - this._angle;
         } else {
             newAngle = 0 - this._angle;
