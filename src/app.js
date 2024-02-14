@@ -6,6 +6,8 @@ export class App {
         this.walls = [];
     }
     attached() {
+        this._boardWidth = document.body.clientWidth;
+        this._boardHeight = document.body.clientHeight;
         this._initWalls();
         this._initBorder();
         this._initBalls();
@@ -47,12 +49,18 @@ export class App {
     _initBorder() {
         const initialBrickCount = 4;
         const brickWidth = document.body.clientWidth / initialBrickCount;
+        const brickHeight = brickWidth / 3;
         for (let i = 0; i < initialBrickCount; i++) {
             this.walls.push({
                 x: i * (brickWidth),
                 y: document.body.clientHeight / 2,
                 length: brickWidth, // or brickHeight for vertical
-                type: 'horizontal border'
+                thickness: brickHeight,
+                type: 'horizontal border',
+                board: {
+                    width: this._boardWidth,
+                    height: this._boardHeight
+                }
             });
         }
     }

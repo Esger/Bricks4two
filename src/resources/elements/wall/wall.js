@@ -1,11 +1,19 @@
 import { bindable, inject } from 'aurelia-framework';
 
 @inject(Element)
-export class Wall {
+export class WallCustomElement {
     @bindable wall;
 
     constructor(element) {
         this._element = element;
+    }
+
+    bind() {
+        this.wall.bump = this._bump;
+    }
+
+    _bump() {
+        // no can bump
     }
 
     attached() {
@@ -13,18 +21,12 @@ export class Wall {
     }
 
     _setWallPosition() {
-        if (this.wall.type.includes('border')) {
+        if (this.wall.type.includes('vertical')) {
             this._element.style.setProperty('--wallX', this.wall.x + 'px');
+            this._element.classList.add('vertical');
+        } else {
             this._element.style.setProperty('--wallY', this.wall.y + 'px');
-            this._element.style.setProperty('--wallWidth', this.wall.length + 'px');
-            this._element.classList.add('border', 'horizontal');
-        } else
-            if (this.wall.type.includes('vertical')) {
-                this._element.style.setProperty('--wallX', this.wall.x + 'px');
-                this._element.classList.add('vertical');
-            } else {
-                this._element.style.setProperty('--wallY', this.wall.y + 'px');
-                this._element.classList.add('horizontal');
-            }
+            this._element.classList.add('horizontal');
+        }
     }
 }

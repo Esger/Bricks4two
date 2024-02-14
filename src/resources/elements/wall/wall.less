@@ -1,9 +1,11 @@
-wall {
-    display : block;
-    position: absolute;
-    left    : var(--wallX);
-    top     : var(--wallY);
-    outline : 1px solid gray;
+wall,
+wall-border {
+    display   : block;
+    position  : absolute;
+    left      : var(--wallX);
+    top       : var(--wallY);
+    outline   : 1px solid gray;
+    transition: all .2s ease;
 
     &.vertical {
         height: 100dvh;

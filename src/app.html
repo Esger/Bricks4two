@@ -3,11 +3,17 @@
     <require from="./app.css"></require>
     <require from="elements/ball/ball"></require>
     <require from="elements/wall/wall"></require>
+    <require from="elements/wall/wall-border"></require>
 
-    <wall repeat.for="wall of walls"
-          wall.bind="wall"></wall>
+    <template repeat.for="wall of walls">
+        <wall-border if.bind="wall.type.includes('border')"
+                     wall.bind="wall"></wall-border>
+        <wall else
+              wall.bind="wall"></wall>
+    </template>
 
     <ball repeat.for="ball of balls"
           ball.bind="ball"
           walls.bind="walls"></ball>
+
 </template>

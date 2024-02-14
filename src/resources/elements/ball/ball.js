@@ -16,17 +16,14 @@ export class Ball {
         $('body').one('click', event => {
             const point = { x: event.clientX, y: event.clientY };
             this._setAngle(point);
-            const target = this._findClosestWallIntersectionAhead();
-            this._wall = this.walls[target.wallIndex];
-            this.moveTo(target);
+            this._anticipateNextMove();
         });
         $(this._element).on('transitionend', _ => {
             // this._speed += 50;
+            this._wall.bump(this._direction);
             this._position = this._getCurrentPosition();
             this._setReflectedAngle();
-            const target = this._findClosestWallIntersectionAhead();
-            this._wall = this.walls[target.wallIndex];
-            this.moveTo(target);
+            this._anticipateNextMove();
         });
     }
 
@@ -35,8 +32,9 @@ export class Ball {
     }
 
     _anticipateNextMove() {
-        this._calculateTargetPosition();
-        this.moveToNextPosition();
+        const target = this._findClosestWallIntersectionAhead();
+        this._wall = this.walls[target.wallIndex];
+        this.moveTo(target);
     }
 
     _getCurrentPosition() {
